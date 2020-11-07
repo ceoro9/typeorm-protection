@@ -1,0 +1,32 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+      "baseUrl": ".",
+      "target": "ES5",
+      "module": "commonjs",
+      "lib": ["es6", "dom"],
+      "types": ["reflect-metadata", "jest", "node"],
+      "sourceMap": true,
+      "declaration": true,
+      "allowJs": false,
+      "esModuleInterop": true,
+      "outDir": "build",
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "removeComments": true,
+      "strictNullChecks": true,
+      "noImplicitAny": true,
+      "noImplicitReturns": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "paths": {
+        "@core/*": ["./src/core/*"],
+        "@column/*": ["./src/column/*"],
+        "@utils/*": ["./src/utils/*"]
+      }
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "build", "examples", "rollup.config.js", "tests", "**/*.test.ts", "**/*.spec.ts"]
+}
