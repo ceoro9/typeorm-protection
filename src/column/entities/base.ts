@@ -2,7 +2,7 @@ import { Json } from '@utils/types';
 import { hash, verifyHash } from '@core/crypto';
 import { isHashPayloadFn } from '@column/checks';
 import { getStrictStringFromJson } from '@utils/object';
-import { BaseColumn, BaseProtectedColumnOptions, ProtectedColumnTypes } from '@column/types';
+import { BaseColumn, BaseProtectedColumnOptions, PayloadToProtect, ProtectedColumnTypes } from '@column/types';
 import {
   PROTECTION_TYPE_PROP_NAME,
   HASHED_PROTECTED_DATA_PROP_NAME,
@@ -13,7 +13,7 @@ import {
 export abstract class BaseEntityProtectedColumn {
   public constructor(private readonly options: BaseProtectedColumnOptions) {}
 
-  public protectTo(payload: Buffer): Partial<Json> {
+  public protectTo(payload: PayloadToProtect): Partial<Json> {
     return this.serializeProtectedColumn({
       type: this.getProtectedColumnType(),
       protectedData: payload,
@@ -21,9 +21,10 @@ export abstract class BaseEntityProtectedColumn {
     });
   }
 
-  public protectFrom(data: Json): Buffer {
+  public protectFrom(data: Json): PayloadToProtect {
     const { protectedData, hash } = this.deserializeProtectedColumn(data);
-    this.verifyProtectedColumnHash(Buffer.from(protectedData), hash);
+    const bufferPayload = this.getBufferPayloadData(protectedData);
+    this.verifyProtectedColumnHash(bufferPayload, hash);
     return protectedData;
   }
 
@@ -33,45 +34,50 @@ export abstract class BaseEntityProtectedColumn {
     return getStrictStringFromJson(payload, PROTECTION_TYPE_PROP_NAME);
   }
 
+  public getBinaryTextFormat() {
+    return this.options.binaryTextFormat;
+  }
+
   protected serializeProtectedColumn(payload: BaseColumn): Partial<Json> {
     const { hash } = payload;
     const binaryTextFormat = this.getBinaryTextFormat();
     return {
       [PROTECTION_TYPE_PROP_NAME]: this.getProtectedColumnType(),
-      [PROTECTED_DATA_PROP_NAME]: payload.protectedData.toString(binaryTextFormat),
+      [PROTECTED_DATA_PROP_NAME]: payload.protectedData,
       [HASH_ALGORITHM_PROP_NAME]: hash?.algorithm,
       [HASHED_PROTECTED_DATA_PROP_NAME]: hash?.data.toString(binaryTextFormat),
     };
   }
 
   protected deserializeProtectedColumn(payload: Json): BaseColumn {
-    const binaryTextFormat = this.getBinaryTextFormat();
     const columnType = this.getSerializedProtectedColumnType(payload);
     if (columnType != this.getProtectedColumnType()) {
       throw new Error(`Unknown column type 'columnType'`);
     }
     return {
       type: columnType,
-      protectedData: Buffer.from(getStrictStringFromJson(payload, PROTECTED_DATA_PROP_NAME), binaryTextFormat),
+      protectedData: getStrictStringFromJson(payload, PROTECTED_DATA_PROP_NAME),
       hash: this.getHashColumnProtection(payload),
     };
   }
 
-  protected makeHashColumnProtection(columnData: Buffer) {
+  protected makeHashColumnProtection(columnData: PayloadToProtect) {
     const options = this.getHashOptions();
     if (!options) {
       return;
     }
 
+    const bufferData = this.getBufferPayloadData(columnData);
+
     if (isHashPayloadFn(options)) {
       const { makeHash, hashOptions } = options;
       return {
-        data: makeHash(columnData, hashOptions),
+        data: makeHash(bufferData, hashOptions),
         algorithm: hashOptions.algorithm,
       };
     }
 
-    const { data } = hash(columnData, options);
+    const { data } = hash(bufferData, options);
     return {
       data,
       algorithm: options.algorithm,
@@ -110,8 +116,9 @@ export abstract class BaseEntityProtectedColumn {
     });
   }
 
-  protected getBinaryTextFormat() {
-    return this.options.binaryTextFormat;
+  protected getBufferPayloadData(data: PayloadToProtect) {
+    const binaryTextFormat = this.getBinaryTextFormat();
+    return Buffer.from(data, binaryTextFormat);
   }
 
   protected getHashOptions() {

@@ -2,7 +2,13 @@ import { Json } from '@utils/types';
 import { decrypt, encrypt } from '@core/crypto';
 import { getStrictStringFromJson } from '@utils/object';
 import { BaseEntityProtectedColumn } from './base';
-import { ColumnEncryptionKeys, ColumnProtectionOptions, EncryptedColumn, ProtectedColumnTypes } from '@column/types';
+import {
+  ColumnEncryptionKeys,
+  ColumnProtectionOptions,
+  EncryptedColumn,
+  PayloadToProtect,
+  ProtectedColumnTypes,
+} from '@column/types';
 import {
   CIPHERED_SLAVE_KEY_PROP_NAME,
   CIPHER_ALGORITHM_PROP_NAME,
@@ -18,7 +24,7 @@ export class EntityEncryptionProtectedColumn extends BaseEntityProtectedColumn {
     super(protectionOptions);
   }
 
-  public protectTo(columnData: Buffer): Partial<Json> {
+  public protectTo(columnData: PayloadToProtect): Partial<Json> {
     return this.serializeProtectedColumn({
       type: ProtectedColumnTypes.ENCRYPTED,
       protectedData: columnData,
@@ -29,12 +35,14 @@ export class EntityEncryptionProtectedColumn extends BaseEntityProtectedColumn {
 
   public protectFrom(protectedColumnData: Json) {
     const { protectedData, encrypt, hash } = this.deserializeProtectedColumn(protectedColumnData);
-    const decryptedData = decrypt(protectedData, this.decryptSlaveKey(encrypt.cipheredSlaveKey, encrypt.masterKeyId), {
+    const encryptedBufferData = this.getBufferPayloadData(protectedData);
+    const slaveKey = this.decryptSlaveKey(encrypt.cipheredSlaveKey, encrypt.masterKeyId);
+    const decryptedData = decrypt(encryptedBufferData, slaveKey, {
       iv: encrypt.iv,
       algorithm: encrypt.algorithm,
     });
     this.verifyProtectedColumnHash(decryptedData, hash);
-    return decryptedData;
+    return this.decodeProtectedData(decryptedData);
   }
 
   public getProtectedColumnType() {
@@ -66,10 +74,11 @@ export class EntityEncryptionProtectedColumn extends BaseEntityProtectedColumn {
     };
   }
 
-  protected getEncryptColumnData(columnData: Buffer) {
+  protected getEncryptColumnData(columnData: PayloadToProtect) {
     const encryptOptions = this.getEncryptOptions();
     const dataKey = this.getSlaveKey();
-    const { data, iv } = encrypt(columnData, dataKey, encryptOptions);
+    const bufferData = this.getBufferPayloadData(columnData);
+    const { data, iv } = encrypt(bufferData, dataKey, encryptOptions);
     return {
       iv,
       data,
@@ -77,6 +86,11 @@ export class EntityEncryptionProtectedColumn extends BaseEntityProtectedColumn {
       cipheredSlaveKey: this.getCipheredSlaveKey(),
       algorithm: this.getEncryptOptions().algorithm,
     };
+  }
+
+  protected decodeProtectedData(data: Buffer) {
+    const binaryTextFormat = this.getBinaryTextFormat();
+    return data.toString(binaryTextFormat);
   }
 
   protected decryptSlaveKey(cipheredSlaveKey: Buffer, masterKeyId: string) {

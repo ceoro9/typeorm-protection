@@ -1,5 +1,7 @@
 import { EncryptOptions, HashOptions } from '@core/crypto';
 
+export type PayloadToProtect = string;
+
 export type DecryptSlaveKey = (cipheredSlaveKey: Buffer, masterKeyId: string) => Buffer;
 
 export interface ColumnEncryptionKeys {
@@ -40,7 +42,7 @@ export type ProtectedColumn = EncryptedColumn | PlainColumn;
 
 export interface BaseColumn {
   type: ProtectedColumnTypes;
-  protectedData: Buffer;
+  protectedData: PayloadToProtect;
   hash?: {
     data: Buffer;
     algorithm: string;

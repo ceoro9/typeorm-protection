@@ -11,7 +11,7 @@ export const makeProtectedColumnTransformer = (
         return null;
       }
 
-      if (value instanceof Buffer) {
+      if (typeof value === 'string') {
         return entityProtectedColumnEncoder.protectTo(value);
       }
 
