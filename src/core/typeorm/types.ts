@@ -10,7 +10,7 @@ export interface ProtectedColumnEncryptOptions {
 }
 
 export interface ProtectedColumnHashOptions {
-  algorithm: string;
+  algorithm?: string;
 }
 
 export interface ProtectedColumnOptions {

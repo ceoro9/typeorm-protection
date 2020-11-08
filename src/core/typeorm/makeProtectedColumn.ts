@@ -11,24 +11,31 @@ import {
 export const makeEntityPlainProtectedColumnInstance = (options: ProtectedColumnOptions) => {
   return new EntityPlainProtectedColumn({
     binaryTextFormat: options.binaryTextFormat ?? DEFAULT_BINARY_DATA_TEXT_FORMAT,
-    hash: options.hash ?? {
-      algorithm: DEFAULT_HASH_ALGORITHM,
-    },
+    hash: makeHashProtection(options.hash),
   });
 };
 
 export const makeEntityEncryptProtectedColumnInstance = (
   options: MakePropertyRequired<ProtectedColumnOptions, 'encrypt'>,
 ) => {
-  const { encrypt } = options;
-  return new EntityEncryptionProtectedColumn(encrypt, {
+  return new EntityEncryptionProtectedColumn(options.encrypt, {
     binaryTextFormat: options.binaryTextFormat ?? DEFAULT_BINARY_DATA_TEXT_FORMAT,
-    hash: options.hash ?? {
-      algorithm: DEFAULT_HASH_ALGORITHM,
-    },
-    encrypt: {
-      algorithm: encrypt?.algorithm ?? DEFAULT_ENCRYPTION_ALGORITHM,
-      ivLength: encrypt?.ivLength ?? DEFAULT_ENCRYPTION_IV_LENGTH,
-    },
+    hash: makeHashProtection(options.hash),
+    encrypt: makeEncryptProtection(options.encrypt),
   });
+};
+
+const makeHashProtection = (hashOptions: ProtectedColumnOptions['hash']) => {
+  return hashOptions
+    ? {
+        algorithm: hashOptions?.algorithm ?? DEFAULT_HASH_ALGORITHM,
+      }
+    : void 0;
+};
+
+const makeEncryptProtection = (encryptOptions: NonNullable<ProtectedColumnOptions['encrypt']>) => {
+  return {
+    algorithm: encryptOptions?.algorithm ?? DEFAULT_ENCRYPTION_ALGORITHM,
+    ivLength: encryptOptions?.ivLength ?? DEFAULT_ENCRYPTION_IV_LENGTH,
+  };
 };
