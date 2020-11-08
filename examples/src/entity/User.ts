@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { EncryptedColumnProtection } from '../../../src';
+import { EncryptedColumnProtection } from '@src/index';
 
 const hashedColumnOptions = {
   hash: {
