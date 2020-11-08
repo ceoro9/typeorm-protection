@@ -9,9 +9,18 @@ export interface ColumnEncryptionKeys {
   decryptSlaveKey: DecryptSlaveKey;
 }
 
+export interface HashPayloadOptions {
+  algorithm: string;
+}
+
+export interface HashPayload {
+  makeHash: (payload: Buffer, hashOptions: HashPayloadOptions) => Buffer;
+  hashOptions: HashPayloadOptions;
+}
+
 export interface BaseProtectedColumnOptions {
   binaryTextFormat: BufferEncoding;
-  hash?: HashOptions;
+  hash?: HashOptions | HashPayload;
 }
 
 export interface ColumnProtectionOptions extends BaseProtectedColumnOptions {

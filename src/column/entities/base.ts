@@ -1,5 +1,6 @@
 import { Json } from '@utils/types';
 import { hash, verifyHash } from '@core/crypto';
+import { isHashPayloadFn } from '@column/checks';
 import { getStrictStringFromJson } from '@utils/object';
 import { BaseColumn, BaseProtectedColumnOptions, ProtectedColumnTypes } from '@column/types';
 import {
@@ -57,14 +58,23 @@ export abstract class BaseEntityProtectedColumn {
   }
 
   protected makeHashColumnProtection(columnData: Buffer) {
-    const hashOptions = this.getHashOptions();
-    if (!hashOptions) {
+    const options = this.getHashOptions();
+    if (!options) {
       return;
     }
-    const { data } = hash(columnData, hashOptions);
+
+    if (isHashPayloadFn(options)) {
+      const { makeHash, hashOptions } = options;
+      return {
+        data: makeHash(columnData, hashOptions),
+        algorithm: hashOptions.algorithm,
+      };
+    }
+
+    const { data } = hash(columnData, options);
     return {
       data,
-      algorithm: hashOptions.algorithm,
+      algorithm: options.algorithm,
     };
   }
 
@@ -81,11 +91,23 @@ export abstract class BaseEntityProtectedColumn {
   }
 
   protected verifyProtectedColumnHash(data: Buffer, hash: BaseColumn['hash']) {
-    if (hash) {
-      verifyHash(data, hash.data, {
-        algorithm: hash.algorithm,
-      });
+    const options = this.getHashOptions();
+
+    if (!hash || !options) {
+      return;
     }
+
+    if (isHashPayloadFn(options)) {
+      const { makeHash, hashOptions } = options;
+      const computedHash = makeHash(data, hashOptions);
+      if (computedHash.compare(data)) {
+        throw new Error(`Hash digest mismatch`);
+      }
+    }
+
+    verifyHash(data, hash.data, {
+      algorithm: hash.algorithm,
+    });
   }
 
   protected getBinaryTextFormat() {
