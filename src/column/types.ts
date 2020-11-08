@@ -9,10 +9,13 @@ export interface ColumnEncryptionKeys {
   decryptSlaveKey: DecryptSlaveKey;
 }
 
-export interface ColumnProtectionOptions {
+export interface BaseProtectedColumnOptions {
   binaryTextFormat: BufferEncoding;
-  encrypt: EncryptOptions;
   hash?: HashOptions;
+}
+
+export interface ColumnProtectionOptions extends BaseProtectedColumnOptions {
+  encrypt: EncryptOptions;
 }
 
 export interface SerializationOptions {
@@ -27,26 +30,22 @@ export enum ProtectedColumnTypes {
 export type ProtectedColumn = EncryptedColumn | PlainColumn;
 
 export interface BaseColumn {
+  type: ProtectedColumnTypes;
+  protectedData: Buffer;
   hash?: {
     data: Buffer;
     algorithm: string;
   };
 }
 
+/* eslint-disable @typescript-eslint/no-empty-interface */
+export interface PlainColumn extends BaseColumn {}
+
 export interface EncryptedColumn extends BaseColumn {
-  type: ProtectedColumnTypes.ENCRYPTED;
   encrypt: {
-    data: Buffer;
     algorithm: string;
     iv: Buffer;
     masterKeyId: string;
     cipheredSlaveKey: Buffer;
-  };
-}
-
-export interface PlainColumn extends BaseColumn {
-  type: ProtectedColumnTypes.PLAIN;
-  plain: {
-    data: string;
   };
 }

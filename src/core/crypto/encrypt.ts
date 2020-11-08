@@ -1,8 +1,5 @@
 import crypto from 'crypto';
 
-const DEFAULT_IV_LENGTH = 16;
-const DEFAULT_ENCRYPTION_ALGORITHM = 'AES-256-CBC';
-
 export interface EncryptOptions {
   algorithm: string;
   ivLength: number;
@@ -13,12 +10,7 @@ export interface DecryptOptions {
   iv: Buffer;
 }
 
-const defaultEncryptOptions = {
-  algorithm: DEFAULT_ENCRYPTION_ALGORITHM,
-  ivLength: DEFAULT_IV_LENGTH,
-};
-
-export const encrypt = (payload: Buffer, key: Buffer, options: EncryptOptions = defaultEncryptOptions) => {
+export const encrypt = (payload: Buffer, key: Buffer, options: EncryptOptions) => {
   const { algorithm, ivLength } = options;
   const iv = crypto.randomBytes(ivLength);
   const cipher = crypto.createCipheriv(algorithm, key, iv);

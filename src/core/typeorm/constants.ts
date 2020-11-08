@@ -1,0 +1,7 @@
+export const DEFAULT_HASH_ALGORITHM = 'sha256';
+
+export const DEFAULT_BINARY_DATA_TEXT_FORMAT = 'hex';
+
+export const DEFAULT_ENCRYPTION_IV_LENGTH = 16;
+
+export const DEFAULT_ENCRYPTION_ALGORITHM = 'AES-256-CBC';

@@ -1,5 +1,3 @@
-export const BINARY_DATA_TEXT_FORMAT = 'hex';
-
 export const PROTECTION_TYPE_PROP_NAME = '_type';
 
 export const IV_PROP_NAME = 'iv';
