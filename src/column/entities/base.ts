@@ -23,7 +23,7 @@ export abstract class BaseEntityProtectedColumn {
 
   public protectFrom(data: Json): PayloadToProtect {
     const { protectedData, hash } = this.deserializeProtectedColumn(data);
-    const bufferPayload = this.getBufferPayloadData(protectedData);
+    const bufferPayload = Buffer.from(protectedData);
     this.verifyProtectedColumnHash(bufferPayload, hash);
     return protectedData;
   }
@@ -67,7 +67,7 @@ export abstract class BaseEntityProtectedColumn {
       return;
     }
 
-    const bufferData = this.getBufferPayloadData(columnData);
+    const bufferData = Buffer.from(columnData);
 
     if (isHashPayloadFn(options)) {
       const { makeHash, hashOptions } = options;
@@ -114,11 +114,6 @@ export abstract class BaseEntityProtectedColumn {
     verifyHash(data, hash.data, {
       algorithm: hash.algorithm,
     });
-  }
-
-  protected getBufferPayloadData(data: PayloadToProtect) {
-    const binaryTextFormat = this.getBinaryTextFormat();
-    return Buffer.from(data, binaryTextFormat);
   }
 
   protected getHashOptions() {

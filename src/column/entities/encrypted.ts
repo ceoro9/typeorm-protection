@@ -25,24 +25,27 @@ export class EntityEncryptionProtectedColumn extends BaseEntityProtectedColumn {
   }
 
   public protectTo(columnData: PayloadToProtect): Partial<Json> {
+    const binaryTextFormat = this.getBinaryTextFormat();
+    const encryptedColumnData = this.getEncryptColumnData(columnData);
     return this.serializeProtectedColumn({
       type: ProtectedColumnTypes.ENCRYPTED,
-      protectedData: columnData,
-      encrypt: this.getEncryptColumnData(columnData),
+      protectedData: encryptedColumnData.data.toString(binaryTextFormat),
+      encrypt: encryptedColumnData,
       hash: this.makeHashColumnProtection(columnData),
     });
   }
 
   public protectFrom(protectedColumnData: Json) {
     const { protectedData, encrypt, hash } = this.deserializeProtectedColumn(protectedColumnData);
-    const encryptedBufferData = this.getBufferPayloadData(protectedData);
+    const binaryTextFormat = this.getBinaryTextFormat();
+    const encryptedBufferData = Buffer.from(protectedData, binaryTextFormat);
     const slaveKey = this.decryptSlaveKey(encrypt.cipheredSlaveKey, encrypt.masterKeyId);
     const decryptedData = decrypt(encryptedBufferData, slaveKey, {
       iv: encrypt.iv,
       algorithm: encrypt.algorithm,
     });
     this.verifyProtectedColumnHash(decryptedData, hash);
-    return this.decodeProtectedData(decryptedData);
+    return decryptedData.toString();
   }
 
   public getProtectedColumnType() {
@@ -77,7 +80,7 @@ export class EntityEncryptionProtectedColumn extends BaseEntityProtectedColumn {
   protected getEncryptColumnData(columnData: PayloadToProtect) {
     const encryptOptions = this.getEncryptOptions();
     const dataKey = this.getSlaveKey();
-    const bufferData = this.getBufferPayloadData(columnData);
+    const bufferData = Buffer.from(columnData);
     const { data, iv } = encrypt(bufferData, dataKey, encryptOptions);
     return {
       iv,
@@ -86,11 +89,6 @@ export class EntityEncryptionProtectedColumn extends BaseEntityProtectedColumn {
       cipheredSlaveKey: this.getCipheredSlaveKey(),
       algorithm: this.getEncryptOptions().algorithm,
     };
-  }
-
-  protected decodeProtectedData(data: Buffer) {
-    const binaryTextFormat = this.getBinaryTextFormat();
-    return data.toString(binaryTextFormat);
   }
 
   protected decryptSlaveKey(cipheredSlaveKey: Buffer, masterKeyId: string) {
