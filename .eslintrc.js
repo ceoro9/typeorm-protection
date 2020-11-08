@@ -8,9 +8,11 @@ module.exports =  {
   ignorePatterns: [
     "node_modules/",
     "build/",
+    "package.json",
     "package-lock.json",
     ".eslintrc.js",
-    "tsconfig.json"
+    "tsconfig.json",
+    "ormconfig.json",
   ],
   parserOptions:  {
     ecmaVersion:  2018,

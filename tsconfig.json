@@ -22,6 +22,7 @@
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
       "paths": {
+        "@src/*": ["./src/*"],
         "@core/*": ["./src/core/*"],
         "@column/*": ["./src/column/*"],
         "@utils/*": ["./src/utils/*"]
