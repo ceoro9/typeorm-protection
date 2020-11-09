@@ -11,8 +11,11 @@ branches:
 jobs:
   include:
     - stage: build
-      name: Linting
+      name: Lint
       script: npm run lint
     
     - script: npm run compile
-      name: Compiling
+      name: Compile
+
+    - script: npm run test
+      name: Test
