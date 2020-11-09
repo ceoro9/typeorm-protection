@@ -106,14 +106,14 @@ export abstract class BaseEntityProtectedColumn {
     if (isHashPayloadFn(options)) {
       const { makeHash, hashOptions } = options;
       const computedHash = makeHash(data, hashOptions);
-      if (computedHash.compare(data)) {
+      if (computedHash.compare(hash.data)) {
         throw new Error(`Hash digest mismatch`);
       }
+    } else {
+      verifyHash(data, hash.data, {
+        algorithm: hash.algorithm,
+      });
     }
-
-    verifyHash(data, hash.data, {
-      algorithm: hash.algorithm,
-    });
   }
 
   protected getHashOptions() {
