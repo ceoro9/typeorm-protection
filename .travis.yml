@@ -17,5 +17,8 @@ jobs:
     - script: npm run compile
       name: Compile
 
-    - script: npm run test
-      name: Test
+    - stage: test
+      name: Unit tests
+      script:
+        - npm run test
+        - npm run coveralls
