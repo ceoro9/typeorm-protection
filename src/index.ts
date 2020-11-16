@@ -1,1 +1,7 @@
-export { PlainColumnProtection, EncryptedColumnProtection } from '@core/typeorm';
+export {
+  TypedProtectedColumn,
+  PlainColumnProtection,
+  EncryptedColumnProtection,
+  TypedPlainColumnProtection,
+  TypedEncryptedColumnProtection,
+} from '@core/typeorm';

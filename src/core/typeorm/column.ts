@@ -1,7 +1,7 @@
 import { Column } from 'typeorm';
 import { MakePropertyRequired } from '@utils/types';
 import { ProtectedColumnOptions } from './types';
-import { makeProtectedColumnTransformer } from './transformer';
+import { makeProtectedColumnTransformer, makeTypedProtectedColumnTransformer } from './transformer';
 import {
   makeEntityEncryptProtectedColumnInstance,
   makeEntityPlainProtectedColumnInstance,
@@ -20,6 +20,26 @@ export const makeEncryptedColumnProtection = (options: MakePropertyRequired<Prot
     type: 'json',
     nullable: true,
     transformer: makeProtectedColumnTransformer(makeEntityEncryptProtectedColumnInstance(options), [
+      makeEntityPlainProtectedColumnInstance(options),
+    ]),
+  });
+};
+
+export const makeTypedPlainColumnProtection = (options: ProtectedColumnOptions) => {
+  return Column({
+    type: 'json',
+    nullable: true,
+    transformer: makeTypedProtectedColumnTransformer(makeEntityPlainProtectedColumnInstance(options), []),
+  });
+};
+
+export const makeTypedEncryptedColumnProtection = (
+  options: MakePropertyRequired<ProtectedColumnOptions, 'encrypt'>,
+) => {
+  return Column({
+    type: 'json',
+    nullable: true,
+    transformer: makeTypedProtectedColumnTransformer(makeEntityEncryptProtectedColumnInstance(options), [
       makeEntityPlainProtectedColumnInstance(options),
     ]),
   });

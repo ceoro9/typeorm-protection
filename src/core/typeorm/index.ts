@@ -1,1 +1,7 @@
-export { PlainColumnProtection, EncryptedColumnProtection } from './core';
+export { TypedProtectedColumn } from './typedProtectedColumn';
+export {
+  PlainColumnProtection,
+  EncryptedColumnProtection,
+  TypedEncryptedColumnProtection,
+  TypedPlainColumnProtection,
+} from './core';

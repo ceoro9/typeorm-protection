@@ -1,3 +1,4 @@
+import { Emptyable, Json } from '@utils/types';
 import { DecryptSlaveKey } from '@column/types';
 
 export interface ProtectedColumnEncryptOptions {
@@ -17,4 +18,15 @@ export interface ProtectedColumnOptions {
   binaryTextFormat?: BufferEncoding;
   encrypt?: ProtectedColumnEncryptOptions;
   hash?: ProtectedColumnHashOptions;
+}
+
+export interface InputFrom {
+  type: 'from';
+  data: Emptyable<Json>;
+  decoder: (data: Json) => Emptyable<string>;
+}
+
+export interface InputTo {
+  type: 'to';
+  value: Emptyable<string>;
 }

@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { EncryptedColumnProtection } from '@src/index';
+import { EncryptedColumnProtection, TypedEncryptedColumnProtection, TypedProtectedColumn } from '@src/index';
 
 const hashedColumnOptions = {
   hash: {
@@ -31,6 +31,6 @@ export class User {
   @EncryptedColumnProtection(hashedColumnOptions)
   public firstName: string;
 
-  @EncryptedColumnProtection(encryptedColumnOptions)
-  public lastName: string;
+  @TypedEncryptedColumnProtection(encryptedColumnOptions)
+  public lastName: TypedProtectedColumn;
 }
